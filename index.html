@@ -1,0 +1,860 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Nearest Google Office</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #202124;
+        --muted: #5f6368;
+        --line: #dadce0;
+        --surface: #ffffff;
+        --soft: #f8fafd;
+        --blue: #1a73e8;
+        --red: #d93025;
+        --yellow: #fbbc04;
+        --green: #188038;
+        --purple: #8430ce;
+        --shadow: 0 18px 50px rgba(32, 33, 36, 0.13);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        width: 100vw;
+        height: 100vh;
+        height: 100dvh;
+        overflow: hidden;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        color: var(--ink);
+        background:
+          linear-gradient(180deg, rgba(248, 250, 253, 0.92), rgba(255, 255, 255, 0.88)),
+          radial-gradient(circle at 8% 10%, rgba(251, 188, 4, 0.22), transparent 28%),
+          radial-gradient(circle at 84% 12%, rgba(26, 115, 232, 0.18), transparent 26%),
+          radial-gradient(circle at 72% 90%, rgba(24, 128, 56, 0.16), transparent 30%);
+      }
+
+      main {
+        height: 100vh;
+        height: 100dvh;
+        overflow: hidden;
+        display: grid;
+        grid-template-columns: minmax(300px, 380px) minmax(0, 1fr);
+      }
+
+      .panel {
+        position: relative;
+        z-index: 2;
+        height: 100vh;
+        height: 100dvh;
+        min-height: 0;
+        overflow: auto;
+        padding: clamp(16px, 2.2vw, 28px);
+        background: rgba(255, 255, 255, 0.88);
+        border-right: 1px solid rgba(218, 220, 224, 0.8);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(16px);
+        display: flex;
+        flex-direction: column;
+        gap: clamp(12px, 1.6vh, 18px);
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 700;
+        letter-spacing: 0;
+      }
+
+      .gmark {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        color: white;
+        font-weight: 800;
+        background:
+          conic-gradient(
+            from -30deg,
+            var(--blue) 0 25%,
+            var(--red) 0 42%,
+            var(--yellow) 0 66%,
+            var(--green) 0 82%,
+            var(--blue) 0
+          );
+      }
+
+      h1 {
+        margin: 0;
+        max-width: 11ch;
+        font-size: clamp(36px, 4.4vw, 62px);
+        line-height: 0.92;
+        letter-spacing: 0;
+      }
+
+      .lede {
+        margin: 8px 0 0;
+        max-width: 34rem;
+        color: var(--muted);
+        font-size: 0.92rem;
+        line-height: 1.42;
+      }
+
+      .metric {
+        padding: 15px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+      }
+
+      .metric-label {
+        margin: 0 0 7px;
+        color: var(--muted);
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .distance {
+        margin: 0;
+        font-size: clamp(34px, 4vw, 48px);
+        line-height: 1;
+        font-weight: 800;
+      }
+
+      .nearest {
+        margin: 8px 0 0;
+        color: var(--muted);
+        font-size: 0.92rem;
+        line-height: 1.45;
+      }
+
+      .controls {
+        display: grid;
+        gap: 12px;
+      }
+
+      .button-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      button {
+        min-height: 34px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 0 14px;
+        background: #fff;
+        color: var(--ink);
+        font: inherit;
+        font-size: 0.88rem;
+        cursor: pointer;
+        transition:
+          border-color 140ms ease,
+          transform 140ms ease,
+          box-shadow 140ms ease;
+      }
+
+      button:hover,
+      button:focus-visible {
+        border-color: var(--blue);
+        box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.13);
+        outline: none;
+      }
+
+      button:active {
+        transform: translateY(1px);
+      }
+
+      .primary {
+        border-color: var(--blue);
+        background: var(--blue);
+        color: #fff;
+      }
+
+      .rankings {
+        display: grid;
+        gap: 0;
+      }
+
+      .rank-row {
+        display: grid;
+        grid-template-columns: 28px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 10px;
+        min-height: 34px;
+        padding: 6px 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .rank-row:last-child {
+        border-bottom: 0;
+      }
+
+      .rank {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        background: var(--ink);
+        font-size: 0.75rem;
+        font-weight: 700;
+      }
+
+      .place {
+        min-width: 0;
+      }
+
+      .place strong,
+      .place span {
+        display: block;
+        overflow-wrap: anywhere;
+      }
+
+      .place span,
+      .miles {
+        color: var(--muted);
+        font-size: 0.86rem;
+      }
+
+      .source {
+        margin-top: auto;
+        color: var(--muted);
+        font-size: 0.76rem;
+        line-height: 1.34;
+      }
+
+      .source a {
+        color: var(--blue);
+      }
+
+      .map-wrap {
+        position: relative;
+        min-width: 0;
+        height: 100vh;
+        height: 100dvh;
+        min-height: 0;
+        overflow: hidden;
+        display: grid;
+        place-items: center;
+        padding: clamp(6px, 1.4vw, 18px);
+      }
+
+      #map {
+        width: 100%;
+        height: 100%;
+        max-width: 1180px;
+        max-height: 100%;
+        min-height: 0;
+        cursor: crosshair;
+        overflow: hidden;
+      }
+
+      .state {
+        fill: transparent;
+        stroke: rgba(255, 255, 255, 0.8);
+        stroke-width: 1.1;
+        transition: fill 160ms ease;
+      }
+
+      .state:hover {
+        fill: rgba(255, 255, 255, 0.18);
+      }
+
+      .border {
+        fill: none;
+        stroke: rgba(32, 33, 36, 0.34);
+        stroke-linejoin: round;
+      }
+
+      .base-state {
+        fill: #eaf1fb;
+        stroke: #ffffff;
+        stroke-width: 0.8;
+      }
+
+      .heat-image {
+        opacity: 0.96;
+        pointer-events: none;
+      }
+
+      .legend {
+        position: absolute;
+        left: clamp(18px, 3vw, 40px);
+        bottom: clamp(18px, 3vw, 38px);
+        width: min(340px, calc(100% - 36px));
+        padding: 12px 14px;
+        border: 1px solid rgba(218, 220, 224, 0.86);
+        border-radius: 8px;
+        color: var(--muted);
+        background: rgba(255, 255, 255, 0.88);
+        box-shadow: 0 10px 30px rgba(32, 33, 36, 0.09);
+        font-size: 0.86rem;
+        line-height: 1.35;
+      }
+
+      .legend-title {
+        margin: 0 0 8px;
+        color: var(--ink);
+        font-weight: 700;
+      }
+
+      .legend-ramp {
+        height: 12px;
+        border-radius: 999px;
+        background: linear-gradient(
+          90deg,
+          var(--blue),
+          #34a853,
+          var(--yellow),
+          var(--red),
+          var(--purple)
+        );
+      }
+
+      .legend-labels {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: 7px;
+      }
+
+      .office {
+        fill: var(--blue);
+        stroke: #fff;
+        stroke-width: 2.4;
+        filter: drop-shadow(0 2px 6px rgba(26, 115, 232, 0.33));
+      }
+
+      .office.nearest-pin {
+        fill: var(--green);
+        r: 6.5;
+      }
+
+      .picked {
+        fill: var(--red);
+        stroke: #fff;
+        stroke-width: 2.5;
+        filter: drop-shadow(0 3px 8px rgba(217, 48, 37, 0.36));
+      }
+
+      .route {
+        fill: none;
+        stroke: var(--red);
+        stroke-width: 2.5;
+        stroke-dasharray: 8 7;
+        stroke-linecap: round;
+      }
+
+      .hint {
+        position: absolute;
+        right: clamp(18px, 3vw, 40px);
+        bottom: clamp(18px, 3vw, 38px);
+        max-width: 310px;
+        padding: 12px 14px;
+        border: 1px solid rgba(218, 220, 224, 0.86);
+        border-radius: 8px;
+        color: var(--muted);
+        background: rgba(255, 255, 255, 0.85);
+        box-shadow: 0 10px 30px rgba(32, 33, 36, 0.09);
+        font-size: 0.9rem;
+        line-height: 1.4;
+      }
+
+      .toast {
+        position: absolute;
+        top: 18px;
+        right: 18px;
+        max-width: 360px;
+        padding: 12px 14px;
+        border-radius: 8px;
+        color: #fff;
+        background: var(--ink);
+        font-size: 0.9rem;
+        opacity: 0;
+        transform: translateY(-8px);
+        pointer-events: none;
+        transition:
+          opacity 180ms ease,
+          transform 180ms ease;
+      }
+
+      .toast.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      @media (max-width: 760px) {
+        body {
+          overflow: auto;
+        }
+
+        main {
+          grid-template-columns: 1fr;
+          height: auto;
+          min-height: 100vh;
+          overflow: visible;
+        }
+
+        .panel {
+          height: auto;
+          min-height: auto;
+          overflow: visible;
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
+        }
+
+        h1 {
+          max-width: 12ch;
+        }
+
+        .map-wrap {
+          height: 70vh;
+          min-height: 65vh;
+          padding: 6px;
+        }
+
+        #map {
+          height: 66vh;
+          min-height: 430px;
+        }
+
+        .legend {
+          position: static;
+          align-self: stretch;
+          margin: 0 14px 14px;
+          width: auto;
+        }
+
+        .hint {
+          display: none;
+          left: 14px;
+          right: 14px;
+          bottom: 14px;
+          max-width: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="panel" aria-label="Nearest Google office result">
+        <div class="brand">
+          <div class="gmark" aria-hidden="true">G</div>
+          <span>Office distance map</span>
+        </div>
+
+        <div>
+          <h1>Nearest Google office</h1>
+          <p class="lede">
+            The color field shows how far each part of the U.S. is from the nearest
+            listed Google location. Click the map for exact miles at any point.
+          </p>
+        </div>
+
+        <section class="metric" aria-live="polite">
+          <p class="metric-label">Point detail</p>
+          <p class="distance" id="distance">-- mi</p>
+          <p class="nearest" id="nearest">The map is colored by nearest-office distance.</p>
+        </section>
+
+        <div class="controls">
+          <button class="primary" id="locate" type="button">Use my location</button>
+          <div class="button-row" aria-label="Sample locations">
+            <button type="button" data-sample="denver">Denver</button>
+            <button type="button" data-sample="dallas">Dallas</button>
+            <button type="button" data-sample="minneapolis">Minneapolis</button>
+            <button type="button" data-sample="phoenix">Phoenix</button>
+          </div>
+        </div>
+
+        <section>
+          <p class="metric-label">Top five nearby</p>
+          <div class="rankings" id="rankings"></div>
+        </section>
+
+        <p class="source">
+          Locations are based on Google Careers' North America location list, filtered to U.S.
+          places and geocoded to city or county centers. Source:
+          <a href="https://www.google.com/about/careers/applications/locations/" target="_blank" rel="noreferrer">
+            Google Careers locations
+          </a>.
+        </p>
+      </section>
+
+      <section class="map-wrap" aria-label="Interactive United States map">
+        <svg id="map" viewBox="0 0 975 610" role="img" aria-label="Heatmap of distance to the nearest Google office in the United States"></svg>
+        <div class="legend" aria-label="Distance color legend">
+          <p class="legend-title">Distance to nearest Google location</p>
+          <div class="legend-ramp"></div>
+          <div class="legend-labels">
+            <span>Near</span>
+            <span>180 mi</span>
+            <span>360+ mi</span>
+          </div>
+        </div>
+        <div class="hint">Color shows distance everywhere. Blue dots are listed Google locations; click for exact miles.</div>
+        <div class="toast" id="toast" role="status"></div>
+      </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
+    <script>
+      const offices = [
+        { name: "Addison", state: "TX", lat: 32.9618, lon: -96.8292 },
+        { name: "Alameda", state: "CA", lat: 37.7652, lon: -122.2416 },
+        { name: "Ann Arbor", state: "MI", lat: 42.2808, lon: -83.743 },
+        { name: "Atlanta", state: "GA", lat: 33.749, lon: -84.388 },
+        { name: "Austell", state: "GA", lat: 33.8126, lon: -84.6344 },
+        { name: "Austin", state: "TX", lat: 30.2672, lon: -97.7431 },
+        { name: "Berkeley County", state: "SC", lat: 33.2031, lon: -79.9537 },
+        { name: "Bridgeport", state: "AL", lat: 34.9476, lon: -85.7144 },
+        { name: "Cambridge", state: "MA", lat: 42.3736, lon: -71.1097 },
+        { name: "Chandler", state: "AZ", lat: 33.3062, lon: -111.8413 },
+        { name: "Chapel Hill", state: "NC", lat: 35.9132, lon: -79.0558 },
+        { name: "Charlotte", state: "NC", lat: 35.2271, lon: -80.8431 },
+        { name: "Chicago", state: "IL", lat: 41.8781, lon: -87.6298 },
+        { name: "Cincinnati", state: "OH", lat: 39.1031, lon: -84.512 },
+        { name: "Clarksville", state: "TN", lat: 36.5298, lon: -87.3595 },
+        { name: "College Park", state: "GA", lat: 33.6534, lon: -84.4494 },
+        { name: "Council Bluffs", state: "IA", lat: 41.2619, lon: -95.8608 },
+        { name: "Detroit", state: "MI", lat: 42.3314, lon: -83.0458 },
+        { name: "Durham", state: "NC", lat: 35.994, lon: -78.8986 },
+        { name: "Fairburn", state: "GA", lat: 33.5671, lon: -84.581 },
+        { name: "Farmington Hills", state: "MI", lat: 42.4989, lon: -83.3677 },
+        { name: "Gardnerville", state: "NV", lat: 38.9413, lon: -119.7496 },
+        { name: "Goleta", state: "CA", lat: 34.4358, lon: -119.8276 },
+        { name: "Henderson", state: "NV", lat: 36.0395, lon: -114.9817 },
+        { name: "Irvine", state: "CA", lat: 33.6846, lon: -117.8265 },
+        { name: "Kansas City", state: "MO", lat: 39.0997, lon: -94.5786 },
+        { name: "Lenoir", state: "NC", lat: 35.914, lon: -81.5389 },
+        { name: "Lincoln", state: "NE", lat: 40.8136, lon: -96.7026 },
+        { name: "Livermore", state: "CA", lat: 37.6819, lon: -121.768 },
+        { name: "Los Angeles", state: "CA", lat: 34.0522, lon: -118.2437 },
+        { name: "Madison", state: "WI", lat: 43.0731, lon: -89.4012 },
+        { name: "Mayes County", state: "OK", lat: 36.3038, lon: -95.235 },
+        { name: "Miami", state: "FL", lat: 25.7617, lon: -80.1918 },
+        { name: "Midlothian", state: "TX", lat: 32.4824, lon: -96.9944 },
+        { name: "Mountain View (Global HQ)", state: "CA", lat: 37.422, lon: -122.0841 },
+        { name: "Nashville", state: "TN", lat: 36.1627, lon: -86.7816 },
+        { name: "New York", state: "NY", lat: 40.7128, lon: -74.006 },
+        { name: "Novi", state: "MI", lat: 42.4806, lon: -83.4755 },
+        { name: "Palo Alto", state: "CA", lat: 37.4419, lon: -122.143 },
+        { name: "Pittsburgh", state: "PA", lat: 40.4406, lon: -79.9959 },
+        { name: "Portland", state: "OR", lat: 45.5152, lon: -122.6784 },
+        { name: "Provo", state: "UT", lat: 40.2338, lon: -111.6585 },
+        { name: "Raleigh", state: "NC", lat: 35.7796, lon: -78.6382 },
+        { name: "Redwood City", state: "CA", lat: 37.4852, lon: -122.2364 },
+        { name: "Reston", state: "VA", lat: 38.9586, lon: -77.357 },
+        { name: "Salt Lake City", state: "UT", lat: 40.7608, lon: -111.891 },
+        { name: "San Antonio", state: "TX", lat: 29.4252, lon: -98.4946 },
+        { name: "San Bruno (YouTube)", state: "CA", lat: 37.6305, lon: -122.4111 },
+        { name: "San Diego", state: "CA", lat: 32.7157, lon: -117.1611 },
+        { name: "San Francisco", state: "CA", lat: 37.7749, lon: -122.4194 },
+        { name: "San Jose", state: "CA", lat: 37.3382, lon: -121.8863 },
+        { name: "Seattle", state: "WA", lat: 47.6062, lon: -122.3321 },
+        { name: "Kirkland", state: "WA", lat: 47.6769, lon: -122.206 },
+        { name: "Bellevue", state: "WA", lat: 47.6101, lon: -122.2015 },
+        { name: "Redmond", state: "WA", lat: 47.674, lon: -122.1215 },
+        { name: "Sterling", state: "VA", lat: 39.0067, lon: -77.4291 },
+        { name: "Sunnyvale", state: "CA", lat: 37.3688, lon: -122.0363 },
+        { name: "The Dalles", state: "OR", lat: 45.5946, lon: -121.1787 },
+        { name: "Thornton", state: "CO", lat: 39.868, lon: -104.9719 },
+        { name: "Washington D.C.", state: "DC", lat: 38.9072, lon: -77.0369 },
+        { name: "White River Junction", state: "VT", lat: 43.6489, lon: -72.3193 }
+      ];
+
+      const samples = {
+        denver: { label: "Denver, CO", lat: 39.7392, lon: -104.9903 },
+        dallas: { label: "Dallas, TX", lat: 32.7767, lon: -96.797 },
+        minneapolis: { label: "Minneapolis, MN", lat: 44.9778, lon: -93.265 },
+        phoenix: { label: "Phoenix, AZ", lat: 33.4484, lon: -112.074 }
+      };
+
+      const svg = d3.select("#map");
+      const width = 975;
+      const height = 610;
+      const projection = d3.geoAlbersUsa().scale(1280).translate([width / 2, height / 2]);
+      const path = d3.geoPath(projection);
+      const baseLayer = svg.append("g");
+      const heatLayer = svg.append("g");
+      const lineLayer = svg.append("g");
+      const stateLayer = svg.append("g");
+      const pinLayer = svg.append("g");
+      const activeLayer = svg.append("g");
+      const distanceEl = document.querySelector("#distance");
+      const nearestEl = document.querySelector("#nearest");
+      const rankingEl = document.querySelector("#rankings");
+      const toastEl = document.querySelector("#toast");
+      let selected = samples.denver;
+      let nearestOffice = null;
+      let toastTimer = null;
+
+      const formatMiles = d3.format(",.0f");
+      const formatCoord = (value, suffix) => `${Math.abs(value).toFixed(2)}${suffix}`;
+      const heatColor = d3
+        .scaleLinear()
+        .domain([0, 70, 150, 260, 380])
+        .range(["#1a73e8", "#34a853", "#fbbc04", "#ea4335", "#8430ce"])
+        .interpolate(d3.interpolateRgb.gamma(1.5))
+        .clamp(true);
+      const heatRgb = (miles) => d3.rgb(heatColor(miles));
+      const indexedOffices = offices.map((office) => ({
+        ...office,
+        latRad: (office.lat * Math.PI) / 180
+      }));
+
+      function haversineMiles(a, b) {
+        const radius = 3958.8;
+        const toRad = (degree) => (degree * Math.PI) / 180;
+        const dLat = toRad(b.lat - a.lat);
+        const dLon = toRad(b.lon - a.lon);
+        const lat1 = toRad(a.lat);
+        const lat2 = toRad(b.lat);
+        const h =
+          Math.sin(dLat / 2) ** 2 +
+          Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+        return 2 * radius * Math.asin(Math.sqrt(h));
+      }
+
+      function rankedOffices(point) {
+        return offices
+          .map((office) => ({ ...office, miles: haversineMiles(point, office) }))
+          .sort((a, b) => a.miles - b.miles);
+      }
+
+      function nearestDistance(point) {
+        let best = Infinity;
+        for (const office of offices) {
+          best = Math.min(best, haversineMiles(point, office));
+        }
+        return best;
+      }
+
+      function fastNearestDistance(point) {
+        let best = Infinity;
+        for (const office of indexedOffices) {
+          const milesPerLon = 69.172 * Math.cos(((point.lat * Math.PI) / 180 + office.latRad) / 2);
+          const dLat = (point.lat - office.lat) * 69.0;
+          const dLon = (point.lon - office.lon) * milesPerLon;
+          const distance = Math.sqrt(dLat * dLat + dLon * dLon);
+          if (distance < best) best = distance;
+        }
+        return best;
+      }
+
+      function projectPoint(point) {
+        return projection([point.lon, point.lat]);
+      }
+
+      function showToast(message) {
+        toastEl.textContent = message;
+        toastEl.classList.add("show");
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toastEl.classList.remove("show"), 3400);
+      }
+
+      function renderResult(point, label = "Selected point") {
+        selected = point;
+        const ranked = rankedOffices(point);
+        nearestOffice = ranked[0];
+        const selectedXY = projectPoint(point);
+        const nearestXY = projectPoint(nearestOffice);
+
+        distanceEl.textContent = `${formatMiles(nearestOffice.miles)} mi`;
+        nearestEl.textContent =
+          `${label} is closest to ${nearestOffice.name}, ${nearestOffice.state}. ` +
+          `Measured from ${formatCoord(point.lat, point.lat >= 0 ? "N" : "S")}, ` +
+          `${formatCoord(point.lon, point.lon >= 0 ? "E" : "W")}.`;
+
+        rankingEl.innerHTML = ranked
+          .slice(0, 5)
+          .map(
+            (office, index) => `
+              <div class="rank-row">
+                <div class="rank">${index + 1}</div>
+                <div class="place">
+                  <strong>${office.name}, ${office.state}</strong>
+                  <span>${office.lat.toFixed(2)}, ${office.lon.toFixed(2)}</span>
+                </div>
+                <strong class="miles">${formatMiles(office.miles)} mi</strong>
+              </div>
+            `
+          )
+          .join("");
+
+        pinLayer
+          .selectAll(".office")
+          .classed("nearest-pin", (d) => d.name === nearestOffice.name && d.state === nearestOffice.state);
+
+        activeLayer.selectAll("*").remove();
+        lineLayer.selectAll("*").remove();
+
+        if (selectedXY && nearestXY) {
+          lineLayer
+            .append("path")
+            .attr("class", "route")
+            .attr("d", `M${selectedXY[0]},${selectedXY[1]}L${nearestXY[0]},${nearestXY[1]}`);
+
+          activeLayer
+            .append("circle")
+            .attr("class", "picked")
+            .attr("cx", selectedXY[0])
+            .attr("cy", selectedXY[1])
+            .attr("r", 7);
+        }
+      }
+
+      function drawHeatmap(states) {
+        const scale = 4;
+        const canvasWidth = Math.ceil(width / scale);
+        const canvasHeight = Math.ceil(height / scale);
+        const canvas = document.createElement("canvas");
+        const mask = document.createElement("canvas");
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+        mask.width = canvasWidth;
+        mask.height = canvasHeight;
+        const context = canvas.getContext("2d", { alpha: true, willReadFrequently: false });
+        const maskContext = mask.getContext("2d", { alpha: true, willReadFrequently: true });
+
+        maskContext.scale(1 / scale, 1 / scale);
+        d3.geoPath(projection, maskContext)(states);
+        maskContext.fillStyle = "#000";
+        maskContext.fill();
+
+        const maskData = maskContext.getImageData(0, 0, canvasWidth, canvasHeight).data;
+        const imageData = context.createImageData(canvasWidth, canvasHeight);
+        const data = imageData.data;
+
+        for (let py = 0; py < canvasHeight; py += 1) {
+          for (let px = 0; px < canvasWidth; px += 1) {
+            const offset = (py * canvasWidth + px) * 4;
+            if (maskData[offset + 3] === 0) {
+              data[offset + 3] = 0;
+              continue;
+            }
+
+            const coords = projection.invert([(px + 0.5) * scale, (py + 0.5) * scale]);
+            if (!coords) continue;
+            const color = heatRgb(fastNearestDistance({ lat: coords[1], lon: coords[0] }));
+            data[offset] = color.r;
+            data[offset + 1] = color.g;
+            data[offset + 2] = color.b;
+            data[offset + 3] = 232;
+          }
+        }
+
+        context.putImageData(imageData, 0, 0);
+        heatLayer
+          .selectAll("image")
+          .data([canvas.toDataURL("image/png")])
+          .join("image")
+          .attr("class", "heat-image")
+          .attr("x", 0)
+          .attr("y", 0)
+          .attr("width", width)
+          .attr("height", height)
+          .attr("href", (d) => d)
+          .attr("preserveAspectRatio", "none");
+      }
+
+      function drawMap(us) {
+        const states = topojson.feature(us, us.objects.states);
+        const borders = topojson.mesh(us, us.objects.states, (a, b) => a !== b);
+
+        baseLayer
+          .selectAll("path")
+          .data(states.features)
+          .join("path")
+          .attr("class", "base-state")
+          .attr("d", path);
+
+        stateLayer
+          .selectAll("path")
+          .data(states.features)
+          .join("path")
+          .attr("class", "state")
+          .attr("d", path)
+          .on("click", (event) => {
+            const [x, y] = d3.pointer(event, svg.node());
+            const coords = projection.invert([x, y]);
+            if (!coords) {
+              showToast("Pick a point inside the projected U.S. map.");
+              return;
+            }
+            renderResult({ lat: coords[1], lon: coords[0] }, "Map point");
+          });
+
+        svg.append("path").datum(borders).attr("class", "border").attr("d", path);
+
+        pinLayer
+          .selectAll("circle")
+          .data(offices.filter((office) => projectPoint(office)))
+          .join("circle")
+          .attr("class", "office")
+          .attr("cx", (d) => projectPoint(d)[0])
+          .attr("cy", (d) => projectPoint(d)[1])
+          .attr("r", 4.8)
+          .append("title")
+          .text((d) => `${d.name}, ${d.state}`);
+
+        svg.on("click", (event) => {
+          if (event.target.tagName.toLowerCase() === "path") return;
+          const [x, y] = d3.pointer(event);
+          const coords = projection.invert([x, y]);
+          if (!coords) return;
+          renderResult({ lat: coords[1], lon: coords[0] }, "Map point");
+        });
+
+        renderResult(selected, samples.denver.label);
+        requestAnimationFrame(() => drawHeatmap(states));
+      }
+
+      document.querySelectorAll("[data-sample]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const sample = samples[button.dataset.sample];
+          renderResult(sample, sample.label);
+        });
+      });
+
+      document.querySelector("#locate").addEventListener("click", () => {
+        if (!navigator.geolocation) {
+          showToast("Your browser does not support location lookup.");
+          return;
+        }
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            renderResult(
+              { lat: position.coords.latitude, lon: position.coords.longitude },
+              "Your location"
+            );
+          },
+          () => showToast("Location access was blocked or unavailable."),
+          { enableHighAccuracy: false, timeout: 9000, maximumAge: 300000 }
+        );
+      });
+
+      d3.json("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json")
+        .then(drawMap)
+        .catch(() => {
+          showToast("The map boundary data could not load. Check your network connection.");
+          renderResult(selected, samples.denver.label);
+        });
+    </script>
+  </body>
+</html>
